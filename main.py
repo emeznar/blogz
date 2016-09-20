@@ -2,6 +2,7 @@ import webapp2, jinja2, os, re
 from google.appengine.ext import db
 from models import Post, User
 import hashutils
+#from google.appengine.api import users
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape = True)
@@ -15,13 +16,14 @@ class BlogHandler(webapp2.RequestHandler):
         return query.fetch(limit=limit, offset=offset)
 
     def get_posts_by_user(self, user, limit, offset):
+        #Implemented a query here to fetch the posts by author
         """
             Get all posts by a specific user, ordered by creation date (descending).
             The user parameter will be a User object.
         """
-
-        # TODO - filter the query so that only posts by the given user
-        return None
+        query = Post.all().filter("author = ", user)
+        posts = query.fetch(limit=limit, offset=offset)
+        return posts
 
     def get_user_by_name(self, username):
         """ Get a user object from the db, based on their username """
@@ -257,9 +259,7 @@ class SignupHandler(BlogHandler):
             self.redirect('/blog/newpost')
 
 class LoginHandler(BlogHandler):
-
-    # TODO - The login code here is mostly set up for you, but there isn't a template to log in
-
+#login handler - created login template this handles for
     def render_login_form(self, error=""):
         """ Render the login form with or without an error, based on parameters """
         t = jinja_env.get_template("login.html")
@@ -288,7 +288,7 @@ class LogoutHandler(BlogHandler):
 
     def get(self):
         self.logout_user()
-        self.redirect('/blog')
+        self.redirect('/login')
 
 app = webapp2.WSGIApplication([
     ('/', IndexHandler),
